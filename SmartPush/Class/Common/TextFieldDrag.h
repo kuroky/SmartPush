@@ -16,7 +16,8 @@ typedef void (^DidEnterDraging)();
     DidEnterDraging _didEnterDraging;
 
 }
--(void)didDragEndBlock:(DidDragEnd)didDragEnd;
--(void)didEnterDragingBlock:(DidEnterDraging)didEnterDraging;
+
+- (void)didDragEndBlock:(DidDragEnd)didDragEnd;
+- (void)didEnterDragingBlock:(DidEnterDraging)didEnterDraging;
 
 @end

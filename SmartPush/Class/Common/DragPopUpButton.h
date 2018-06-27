@@ -7,13 +7,13 @@
 //
 
 #import <Cocoa/Cocoa.h>
+
 typedef void (^DragPopUpButtonDragEnd)(NSString *text);
 
-@interface DragPopUpButton : NSPopUpButton
-{
+@interface DragPopUpButton : NSPopUpButton {
     DragPopUpButtonDragEnd _dragPopUpButtonDragEnd;
 }
 
--(void)dragPopUpButtonDragEnd:(DragPopUpButtonDragEnd)dragPopUpButtonDragEnd;
+- (void)dragPopUpButtonDragEnd:(DragPopUpButtonDragEnd)dragPopUpButtonDragEnd;
 
 @end

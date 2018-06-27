@@ -9,7 +9,6 @@
 #define Push_Developer  "gateway.sandbox.push.apple.com"
 #define Push_Production  "gateway.push.apple.com"
 
-
 #define KEY_CERNAME     @"KEY_CERNAME"
 #define KEY_CER         @"KEY_CERPATH"
 #define KEY_TOKEN       @"KEY_TOKEN"
@@ -18,6 +17,7 @@
 #import "PushViewController.h"
 #import "SecManager.h"
 #import "Sec.h"
+
 @implementation PushViewController
 
 - (void)viewDidLoad {
@@ -32,21 +32,20 @@
     [self modeSwitch:self.devSelect];
     [self loadUserData];
     [self loadKeychain];
-
 }
 
 - (IBAction)devPopButtonSelect:(DragPopUpButton*)sender {
-
-    if (sender.indexOfSelectedItem ==0) {
+    if (sender.indexOfSelectedItem == 0) {
         _cerName = nil;
         _lastCerPath = nil;
     }
-    else if (sender.indexOfSelectedItem ==1) {
+    else if (sender.indexOfSelectedItem == 1) {
 //        [self devCerBrowse:nil];
         [self browseDone:^(NSString *url) {
                 [self applyWithCerPath:url];
         }];
-    }else{
+    }
+    else {
         [self log:[NSString stringWithFormat:@"选择证书 %@",_cerName] warning:NO];
         [self resetConnect];
         _currentSec =   [_certificates objectAtIndex:sender.indexOfSelectedItem-2];
@@ -56,7 +55,8 @@
     }
     [self saveUserData];
 }
-- (void)applyWithCerPath:(NSString*)cerPath{
+
+- (void)applyWithCerPath:(NSString *)cerPath{
     SecCertificateRef secRef =  [SecManager certificatesWithPath:cerPath];
     if ([SecManager isPushCertificate:secRef]) {
         _lastCerPath = cerPath;
@@ -74,13 +74,14 @@
             [_certificates addObject:_currentSec];
             [self reloadPopButton];
         }
-    }else{
+    }
+    else {
         [self showMessage:@"不是有效的推送证书"];
         [self log:@"不是有效的推送证书" warning:YES];
     }
     [self saveUserData];
-
 }
+
 - (void)reloadPopButton{
     [self.cerPopUpButton dragPopUpButtonDragEnd:^(NSString *text) {
         [self applyWithCerPath:text];
@@ -90,7 +91,7 @@
     [self.cerPopUpButton addItemWithTitle:@"从下拉列表选择或者拖拽推送证书到选择框"];
     [self.cerPopUpButton addItemWithTitle:@"从文件选择推送证书(.cer)"];
 
-    for (int i=0;i<[_certificates count];i++) {
+    for (int i=0; i<[_certificates count]; i++) {
         Sec *sec =  [_certificates objectAtIndex:i];
         [self.cerPopUpButton addItemWithTitle:[NSString stringWithFormat:@"%@ %@", sec.name, sec.expire]];
         //        [suffix appendString:@" "];
@@ -104,9 +105,9 @@
             [self connect:nil];
         }
     }
-
 }
-- (void)loadKeychain{
+
+- (void)loadKeychain {
     _certificates = [[SecManager allPushCertificatesWithEnvironment:YES] mutableCopy];
     if (_lastCerPath.length>0)
     {
@@ -117,8 +118,9 @@
     [self log:@"读取Keychain中证书" warning:NO];
     [self reloadPopButton];
 }
+
 #pragma mark Private
-- (void)loadUserData{
+- (void)loadUserData {
     NSLog(@"load userdefaults");
     [self log:@"读取保存的信息" warning:NO];
 
@@ -135,7 +137,8 @@
     if ([[_defaults valueForKey:KEY_CER] description].length>0)
         _lastCerPath = [_defaults valueForKey:KEY_CER];
 }
-- (void)saveUserData{
+
+- (void)saveUserData {
     [_defaults setValue:_lastCerPath forKey:KEY_CER];
     [_defaults setValue:self.tokenTextField.stringValue forKey:KEY_TOKEN];
     [_defaults setValue:self.payload.stringValue forKey:KEY_Payload];
@@ -143,13 +146,13 @@
     [_defaults synchronize];
     [self log:@"保存推送信息" warning:NO];
 }
+
 - (void)disconnect {
     NSLog(@"disconnect");
     [self log:@"断开链接" warning:NO];
     [self log:@"---------------------------------" warning:NO];
 
     // OSStatus result;
-    
    // NSLog(@"SSLClose(): %d", _closeResult);
     if (_closeResult != 0) {
         return;
@@ -176,7 +179,6 @@
     // Delete SSL context.
     _closeResult = SSLDisposeContext(_context);
     // NSLog(@"SSLDisposeContext(): %d", result);
-    
 }
 
 #pragma mark --IBAction
@@ -256,30 +258,25 @@
     // Open keychain.
     _connectResult = SecKeychainCopyDefault(&_keychain);
      NSLog(@"SecKeychainOpen(): %d", _connectResult);
-
-    
     [self prepareCerData];
-    
-    
 }
+
 - (void)resetConnect{
     [self log:@"重置连接" warning:NO];
     _connectResult = -50;
     [self disconnect];
 }
-- (NSString*)buildToken:(NSTextField*)text{
+
+- (NSString *)buildToken:(NSTextField *)text{
     // Validate input.
     NSMutableString* tempString;
     
-    if(![text.stringValue rangeOfString:@" "].length)
-    {
+    if (![text.stringValue rangeOfString:@" "].length) {
         //put in spaces in device token
         tempString =  [NSMutableString stringWithString:text.stringValue];
         int offset = 0;
-        for(int i = 0; i < tempString.length; i++)
-        {
-            if(i%8 == 0 && i != 0 && i+offset < tempString.length-1)
-            {
+        for (int i = 0; i < tempString.length; i++) {
+            if(i%8 == 0 && i != 0 && i+offset < tempString.length-1) {
                 //NSLog(@"i = %d + offset[%d] = %d", i, offset, i+offset);
                 [tempString insertString:@" " atIndex:i+offset];
                 offset++;
@@ -292,9 +289,9 @@
     }
     return text.stringValue;
 }
-- (void)prepareCerData{
-    
-    if (_currentSec.certificateRef == NULL){
+
+- (void)prepareCerData {
+    if (_currentSec.certificateRef == NULL) {
         [self showMessage:@"读取证书失败!"];
         [self log:@"读取证书失败!" warning:YES];
         return;
@@ -303,22 +300,20 @@
     // Create identity.
     _connectResult = SecIdentityCreateWithCertificate(_keychain, _currentSec.certificateRef, &_identity);
     // NSLog(@"SecIdentityCreateWithCertificate(): %d", result);
-    if(_connectResult != errSecSuccess ){
+    if (_connectResult != errSecSuccess ) {
         [self log:[NSString stringWithFormat:@"SSL端点域名不能被设置 %d",_connectResult] warning:YES];
     }
     
-    
-    if(_connectResult == errSecItemNotFound ){
+    if (_connectResult == errSecItemNotFound ) {
         [self log:[NSString stringWithFormat:@"Keychain中不能找到证书 %d",_connectResult] warning:YES];
     }
-    
     
     // Set client certificate.
     CFArrayRef certificates = CFArrayCreate(NULL, (const void **)&_identity, 1, NULL);
     _connectResult = SSLSetCertificate(_context, certificates);
     // NSLog(@"SSLSetCertificate(): %d", result);
     CFRelease(certificates);
-    if(_connectResult != errSecSuccess ){
+    if (_connectResult != errSecSuccess ) {
         [self log:[NSString stringWithFormat:@"SSL证书不能被设置 %d",_connectResult] warning:YES];
     }
     
@@ -359,12 +354,35 @@
 #endif
             case errSSLClosedAbort:  [self log:[NSString stringWithFormat:@"SSL握手因错误关闭 %d",_connectResult]  warning:YES];
                 break;
-
         }
 
     } while(_connectResult == errSSLWouldBlock);
-    
 }
+
++ (NSString *)filterHex:(NSString *)hex {
+    hex = hex.lowercaseString;
+    NSMutableString *result = [[NSMutableString alloc] init];
+    for (NSUInteger i = 0; i < hex.length; i++) {
+        unichar c = [hex characterAtIndex:i];
+        if ((c >= 'a' && c <= 'f') || (c >= '0' && c <= '9')) {
+            [result appendString:[NSString stringWithCharacters:&c length:1]];
+        }
+    }
+    return result;
+}
+
++ (NSData *)dataFromHex:(NSString *)hex {
+    NSMutableData *result = [[NSMutableData alloc] init];
+    char buffer[3] = {'\0','\0','\0'};
+    for (NSUInteger i = 0; i < hex.length / 2; i++) {
+        buffer[0] = [hex characterAtIndex:i * 2];
+        buffer[1] = [hex characterAtIndex:i * 2 + 1];
+        unsigned char b = strtol(buffer, NULL, 16);
+        [result appendBytes:&b length:1];
+    }
+    return result;
+}
+
 - (IBAction)push:(id)sender {
     [self saveUserData];
  
@@ -381,14 +399,9 @@
     _token = [self buildToken:self.tokenTextField];
 
     // Convert string into device token data.
-    NSMutableData *deviceToken = [NSMutableData data];
-    unsigned value;
-    NSScanner *scanner = [NSScanner scannerWithString:_token];
-    while(![scanner isAtEnd]) {
-        [scanner scanHexInt:&value];
-        value = htonl(value);
-        [deviceToken appendBytes:&value length:sizeof(value)];
-    }
+    NSString *normal = [self.class filterHex:_token];
+    NSString *trunk = normal.length >= 64 ? [normal substringToIndex:64] : nil;
+    NSData *deviceToken = [self.class dataFromHex:trunk];
     
     // Create C input variables.
     char *deviceTokenBinary = (char *)[deviceToken bytes];
@@ -433,11 +446,10 @@
                 break;
             case errSSLClosedGraceful: [self log:[NSString stringWithFormat:@"写入连接关闭 %d",result] warning:YES];
                 break;
-
         }
-        
     }
 }
+
 //环境切换
 - (IBAction)modeSwitch:(id)sender {
     [self resetConnect];
@@ -467,7 +479,6 @@
             self.payload.stringValue = @"{\"aps\":{\"alert\":\"This is some fancy message.\",\"badge\":6,\"sound\": \"default\"}}";
             break;
     }
-
 }
 
 - (void)browseDone:(void (^)(NSString *url))complete{
@@ -496,6 +507,7 @@
 //    }
 //    return fileNameOpened?:@"";
 }
+
 #pragma mark --alert
 - (void)showMessage:(NSString*)message{
     NSAlert *alert = [[NSAlert alloc] init];
@@ -503,8 +515,8 @@
     [alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse returnCode) {
         
     }];
-    
 }
+
 - (void)showAlert:(NSAlertStyle)style title:(NSString *)title message:(NSString *)message {
     NSAlert *alert = [[NSAlert alloc] init];
     [alert addButtonWithTitle:@"OK"];
@@ -513,10 +525,9 @@
     [alert setAlertStyle:style];
     [alert runModal];
 }
-#pragma mark - Logging
 
-- (void)log:(NSString *)message warning:(BOOL)warning
-{
+#pragma mark - Logging
+- (void)log:(NSString *)message warning:(BOOL)warning {
     dispatch_async(dispatch_get_main_queue(), ^{
         if (message.length>0) {
             NSDictionary *attributes = @{NSForegroundColorAttributeName:warning?[NSColor redColor]:[NSColor blackColor] , NSFontAttributeName: [NSFont systemFontOfSize:12]};
@@ -529,22 +540,19 @@
 }
 
 #pragma mark -- text field delegate
-
-- (void)controlTextDidEndEditing:(NSNotification *)obj{
-    if(obj.object == self.tokenTextField)
-    {
+- (void)controlTextDidEndEditing:(NSNotification *)obj {
+    if(obj.object == self.tokenTextField) {
         NSTextField *text =  obj.object;
         [self buildToken:text];
     }
 }
 
-- (void)controlTextDidChange:(NSNotification *)obj{
- 
+- (void)controlTextDidChange:(NSNotification *)obj {
 
 }
+
 - (void)setRepresentedObject:(id)representedObject {
     [super setRepresentedObject:representedObject];
-    
     // Update the view, if already loaded.
 }
 

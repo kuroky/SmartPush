@@ -8,7 +8,9 @@
 
 #import "SecManager.h"
 #import "Sec.h"
+
 @implementation SecManager
+
 + (NSArray<Sec*> *)allPushCertificatesWithEnvironment:(BOOL)isDevelop{
     NSError *error;
     NSArray *allCertificates = [self allKeychainCertificatesWithError:&error];
@@ -27,7 +29,8 @@
     }
     return pushs;
 }
-+ (Sec*)secModelWithRef:(SecCertificateRef)sec{
+
++ (Sec*)secModelWithRef:(SecCertificateRef)sec {
     NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
     [formatter setDateStyle:NSDateFormatterShortStyle];
     [formatter setTimeStyle:NSDateFormatterShortStyle];
@@ -41,7 +44,8 @@
 
     return secModel;
 }
-+ (BOOL)isPushCertificateWithName:(NSString*)name{
+
++ (BOOL)isPushCertificateWithName:(NSString *)name {
     
     if ([name rangeOfString:@"Apple Development IOS Push Services:"].location != NSNotFound ||
         [name rangeOfString:@"Apple Production IOS Push Services:"].location != NSNotFound||
@@ -55,7 +59,8 @@
     }
     return NO;
 }
-+ (BOOL)isPushCertificate:(SecCertificateRef)sec{
+
++ (BOOL)isPushCertificate:(SecCertificateRef)sec {
     NSString *name = [self subjectSummaryWithCertificate:sec];
 
     if ([name rangeOfString:@"Apple Development IOS Push Services:"].location != NSNotFound ||
@@ -70,8 +75,8 @@
     }
     return NO;
 }
-+ (NSArray *)allKeychainCertificatesWithError:(NSError *__autoreleasing *)error
-{
+
++ (NSArray *)allKeychainCertificatesWithError:(NSError *__autoreleasing *)error {
     NSDictionary *options = @{(__bridge id)kSecClass: (__bridge id)kSecClassCertificate,
                               (__bridge id)kSecMatchLimit: (__bridge id)kSecMatchLimitAll};
     CFArrayRef certs = NULL;
@@ -82,29 +87,26 @@
     }
     return certificates;
 }
-+ (SecCertificateRef)certificatesWithPath:(NSString*)path
-{
+
++ (SecCertificateRef)certificatesWithPath:(NSString *)path {
     NSData *certificateData = [NSData dataWithContentsOfFile:path];
     SecCertificateRef certificate = SecCertificateCreateWithData(kCFAllocatorDefault, (__bridge CFDataRef)certificateData);
     return certificate;
 }
 
-+ (NSString *)subjectSummaryWithCertificate:(SecCertificateRef)certificate
-{
++ (NSString *)subjectSummaryWithCertificate:(SecCertificateRef)certificate {
     return certificate ? CFBridgingRelease(SecCertificateCopySubjectSummary(certificate)) : nil;
 }
-+ (NSDate *)expirationWithCertificate:(SecCertificateRef)certificate
-{
+
++ (NSDate *)expirationWithCertificate:(SecCertificateRef)certificate {
     return [self valueWithCertificate:certificate key:(__bridge id)kSecOIDInvalidityDate];
 }
 
-+ (id)valueWithCertificate:(SecCertificateRef)certificate key:(id)key
-{
++ (id)valueWithCertificate:(SecCertificateRef)certificate key:(id)key {
     return [self valuesWithCertificate:certificate keys:@[key] error:nil][key][(__bridge id)kSecPropertyKeyValue];
 }
 
-+ (NSDictionary *)valuesWithCertificate:(SecCertificateRef)certificate keys:(NSArray *)keys error:(NSError **)error
-{
++ (NSDictionary *)valuesWithCertificate:(SecCertificateRef)certificate keys:(NSArray *)keys error:(NSError **)error {
     CFErrorRef e = NULL;
     NSDictionary *result = CFBridgingRelease(SecCertificateCopyValues(certificate, (__bridge CFArrayRef)keys, &e));
     if (error) *error = CFBridgingRelease(e);
